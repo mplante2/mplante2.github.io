@@ -13,4 +13,5 @@
 [Assignment 6](Assignment6.html)
 
 [Assignment 7](Assignment7.html)
-[Link to the plot](abc.png)
+
+- [Link to the plot](abc.png)
