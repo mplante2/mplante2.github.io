@@ -37,7 +37,7 @@ df <- PimaIndiansDiabetes
 ```{r}
 library(caret)
 set.seed(2020)
-splitIndex <- createDataPartition(df$diabetes , p = .70, 
+splitIndex <- createDataPartition(df$diabetes , p = .80, 
                                   list = FALSE)
 df_train <- df[ splitIndex,]
 df_test <- df[-splitIndex,]
