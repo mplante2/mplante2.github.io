@@ -1,0 +1,320 @@
+---
+title: "Midterm Presentation"
+author: "Morgann Plante"
+date: "10/26/2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+
+library(gapminder)
+library(gganimate)
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(caret)
+library(rpart)
+df1 <- read_csv('midterm.csv')
+df1$payfix <- NULL
+df1$preopday<- NULL
+df1$bwght <- NULL
+df1$ecodub92 <- NULL
+df1$obs_hour <- NULL
+df1$nicu_day <- NULL
+df1$diag_adm<- NULL
+df1$pt_state<- NULL
+df1$asource<- NULL
+df1 <- drop_na(df1, raceethn, er_mode)
+```
+
+
+## Plot of Age of Patients Hospitalized
+
+```{r}
+library(tidyverse)
+df1 %>% ggplot()+
+  geom_histogram(mapping = aes(x = age))+
+  labs(x='Age', 
+       y = 'Count', 
+       title = 'Age of Patients Hospitalized', 
+       caption = 'There are more newborns than any other age hopitilized in Rhode Island in the given year.')
+```
+## Plot of the Sex of Patients Hospitalized
+```{r}
+df1$sex <- as.character(df1$sex)
+df1 %>% ggplot()+
+  geom_bar(mapping = aes(x = sex))+
+  labs(x='Sex', 
+       y = 'Count', 
+       title = 'Sex of Patients Hospitalized', 
+       caption = 'There are more females than males hopitilized in Rhode Island in this given year.')
+```
+
+## Plot of the Age and Total Patient Charges
+```{r}
+df1 %>%  ggplot()+
+  geom_point(mapping = aes(x= age, y= tot), position="jitter")+
+  labs(x='Age', 
+       y = 'Total Patient Charhes', 
+       title = 'Scatter Plot of Age and Total Patient Charges', 
+       caption = 'Newborns have the largest patient charge.')
+```
+
+## Plot of the Ages of Patients with Race and Ethnicity
+```{r}
+df1$raceethn <- as.character(df1$raceethn)
+df1 %>% ggplot()+
+  geom_density(mapping = aes(x = age , color = raceethn))+
+  labs(x='Age', 
+       y = 'Count',
+       color= 'Race and Ethnicity',
+       title = 'Plot of Ages of Patients with Race and Ethnicity', 
+       caption = 'White, or not Hispanic (1) patients are admitted to the hospital more after age 70 than other races and ethnicities.')
+```
+
+## Plot of Patients Race and Ethnicity and Sex
+```{r}
+df1 %>% ggplot()+
+  geom_bar(mapping=aes(x=raceethn, fill=sex), position='dodge')+
+  labs(x='Race and Ethnicity', 
+       y = 'Count',
+       color= 'Sex',
+       title = 'Bar Plot of Patients Race and Ethnicity and Sex', 
+       caption = 'White, or not Hispanic (1) female patients are admitted to the hospital more than other races and ethnicities.')
+```
+
+## Plot of Age and Total Patient Charges
+```{r}
+df1 %>% filter(raceethn==1|raceethn==7) %>% 
+  ggplot(mapping=aes(x=age, y=tot))+ 
+  geom_point()+
+  geom_smooth()+
+  facet_wrap(~raceethn)+
+  labs(x='Age', 
+       y = 'Total Patient Charges', 
+       title = 'Plot of Age and Total Patient Charges', 
+       caption = 'White, not Hispanics has higher total patient charges than Hispanics.')
+```
+
+## Plot of Age and Length of Stay
+```{r}
+df1 %>% 
+  ggplot()+ 
+  geom_point(mapping=aes(x=age, y=los, color=sex), position='jitter')+
+  labs(x='Age', 
+       y = 'Length of Stay', 
+       color='Sex', 
+       title = 'Scatter Plot Age and Length of Stay', 
+       caption = 'Younger patients, less than 40, have more outliers for a longer length of stay than older patients.')
+```
+
+## Plot of the Number per Sex for the Month of Arrival
+```{r}
+df1 %>% ggplot()+ 
+  geom_bar(mapping=aes(x=moa, fill=sex), 
+           position = 'dodge')+
+  labs(x='Month of Arrival', 
+       y = 'Number per Sex', 
+       color='Sex', 
+       title = 'Bar Chart of the Number per Sex for the Month of Arrival', 
+       caption = 'Females are admitted to the hospital more than males for any given month.')
+```
+
+## Plot of the Admission Type per Month of Admission
+```{r}
+df1$admtype <- as.character(df1$admtype)
+df1 %>% ggplot()+ 
+  geom_bar(mapping=aes(x=moa, fill=admtype), 
+           position = 'fill')+
+  labs(x='Month of Arrival', 
+       y = 'Percentage of Admission Type', 
+       color='Admission Type', 
+       title = 'Bar Chart of the Admission Type per Month of Admission', 
+       caption = 'The type of admission that is most common for any given month is Emergency, 1.')
+```
+
+## Plot of the Mean Total Patient Charges for Each Admission Type
+```{r}
+df1 %>% group_by(admtype) %>% summarise(mean=mean(tot)) %>% 
+  ggplot()+ 
+  geom_col(mapping=aes(x=admtype, y=mean))+
+  labs(x='Admission Type', 
+       y = 'Mean of Total Patient Charges', 
+       title = 'Bar Chart of the Mean Total Patient Charges for Each Admission Type', 
+       caption = 'Trauma, 5, has the greatest mean of total patient charges compared to other admission types.')
+```
+
+## Plot of the Mean Total Patient Charges for each Provider per Month of Admission
+```{r}
+d1 <- df1 %>% group_by(moa, provider) %>% summarise(mean = mean(tot))
+d2 <- d1 %>% group_by(moa) %>% mutate(rank=rank(-mean)) %>% ungroup()
+d3 <- d2 %>% filter(rank <= 7)
+a1 <- d3 %>% ggplot(aes(x=rank, y=mean, group=provider, fill= provider, label=provider)) + geom_col()+
+    geom_text(aes(y = mean, label = provider), hjust = 1.4)+ 
+    coord_flip(clip = "off", expand = FALSE) +scale_x_reverse()+
+    labs(title = 'Month of Arrival {closest_state}', x='', y='Total Patient Charges', fill='Provider', caption = 'Provider 7215, Bradley, has the most total patient charges on average than any provider for any given month.')+
+    theme(plot.title = element_text(hjust = 1, size = 22),
+          axis.ticks.y = element_blank(),
+          axis.text.y  = element_blank()) + 
+    transition_states(moa)+
+    ease_aes("cubic-in-out")
+animate(a1, nframes = 400, fps = 10)
+```
+## Predictive Models
+Target is the Total Patient Charges
+- Low cost < 22050
+- High cost > 22050
+```{r, echo=FALSE}
+median(df1$tot)
+df1$target <- case_when(
+  df1$tot <22050 ~ 'low cost',
+  TRUE ~ 'high cost')
+
+df2 <- select(df1,"age","sex","raceethn","provider","moa","mod","campus", "er_mode", "los","target")
+
+library(caret)
+df2$moa <- as.character(df2$moa)
+df2$mod <- as.character(df2$mod)
+
+set.seed(2020)
+splitIndex <- createDataPartition(df2$target , p = .10, list = FALSE)
+df_train <- df2[ splitIndex,]
+df_test <- df2[-splitIndex,]
+
+library(rpart)
+tree_model <- rpart(target ~ ., data = df_train,
+                 control = rpart.control(maxdepth = 3))
+library(rattle)
+fancyRpartPlot(tree_model)
+barplot(tree_model$variable.importance)
+```
+## Tree Approach
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:10)
+trControl = trainControl(method = "cv",
+                         number = 5)
+tree_approach <- train(target~., data=df_train, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach)
+```
+## Random Forest with Ranger Method
+```{r}
+trControl = trainControl(method = "cv",
+                         number = 5)
+tuneGrid = expand.grid(mtry = 2:4,
+                       splitrule = c('gini', 'extratrees'),
+                       min.node.size = c(1:5))
+ranger_cv <- train(target~., data=df_train, 
+                    method = "ranger", 
+                    trControl = trControl,
+                    tuneGrid = tuneGrid)
+plot(ranger_cv)
+```
+## Random Forest
+```{r}
+tuneGrid = expand.grid(mtry = 2:5)
+trControl = trainControl(method = "cv",
+                         number = 5)
+forest_cv <- train(target~., data=df_train, 
+                                method = "rf", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(forest_cv)
+```
+
+## Comparison of the Models 
+```{r}
+results <- resamples(list(forest = forest_cv,
+                          ranger = ranger_cv,
+                          tree= tree_approach))
+bwplot(results)
+```
+
+## Accuracy of the Final Model on the Test Data
+```{r}
+pred <- predict(ranger_cv, df_test)
+cm <- confusionMatrix(data = factor(pred), reference = factor(df_test$target), positive = "high cost")
+cm$overall[1]
+```
+
+## New Target Variable
+The new target variable is the length of stay
+- Short stay <3
+- Long stay >3
+```{r}
+median(df1$los)
+df1$target1 <- case_when(
+  df1$los <3 ~ 'short stay',
+  TRUE ~ 'long stay')
+
+df3 <- select(df1,"age","sex","raceethn","provider","moa","mod","campus", "er_mode", "tot","target1")
+```
+```{r, echo=FALSE}
+set.seed(2020)
+splitIndex <- createDataPartition(df3$target1 , p = .10, list = FALSE)
+df_train1 <- df3[ splitIndex,]
+df_test1 <- df3[-splitIndex,]
+```
+## Variable Importance for New Target
+```{r}
+treeModel <- rpart(target1 ~ ., data = df_train1,
+                 control = rpart.control(maxdepth = 3))
+library(rattle)
+fancyRpartPlot(treeModel)
+barplot(treeModel$variable.importance)
+```
+## Tree Approach
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:10)
+trControl = trainControl(method = "cv",
+                         number = 5)
+treeApproach <- train(target1~., data=df_train1, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(treeApproach)
+```
+## Random Forest with Ranger Method
+```{r}
+trControl = trainControl(method = "cv",
+                         number = 5)
+tuneGrid = expand.grid(mtry = 2:4,
+                       splitrule = c('gini', 'extratrees'),
+                       min.node.size = c(1:5))
+rangerCv <- train(target1~., data=df_train1, 
+                    method = "ranger", 
+                    trControl = trControl,
+                    tuneGrid = tuneGrid)
+plot(rangerCv)
+```
+## Random Forest
+```{r}
+tuneGrid = expand.grid(mtry = 2:5)
+trControl = trainControl(method = "cv",
+                         number = 5)
+forestCv <- train(target1~., data=df_train1, 
+                                method = "rf", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(forestCv)
+```
+## Comparison of the Models
+```{r}
+results <- resamples(list(forest = forestCv,
+                          ranger = rangerCv,
+                          tree= treeApproach))
+bwplot(results)
+```
+## Accuracy of the Final Model on the Test Data
+```{r}
+pred <- predict(rangerCv, df_test1)
+cm <- confusionMatrix(data = factor(pred), reference = factor(df_test1$target1), positive = "long stay")
+cm$overall[1]
+```

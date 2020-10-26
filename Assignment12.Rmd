@@ -120,5 +120,9 @@ results <- resamples(list(forest = forest_cv,
                           ranger = ranger_cv,
                           xbgTree= xgb_model))
 bwplot(results)
+
+pred <- predict(forest_cv, df_test)
+cm <- confusionMatrix(data = pred, reference = df_test$target, positive = "pos")
+cm$overall[1]
 ```
 
