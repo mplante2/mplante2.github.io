@@ -2,7 +2,8 @@
 title: "Midterm Presentation"
 author: "Morgann Plante"
 date: "10/26/2020"
-output: ioslides_presentation
+output:
+  slidy_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -167,7 +168,9 @@ animate(a1, nframes = 400, fps = 10)
 ```
 ## Predictive Models
 Target is the Total Patient Charges
+
 - Low cost < 22050
+
 - High cost > 22050
 ```{r, echo=FALSE}
 median(df1$tot)
@@ -246,7 +249,9 @@ cm$overall[1]
 
 ## New Target Variable
 The new target variable is the length of stay
+
 - Short stay <3
+
 - Long stay >3
 ```{r}
 median(df1$los)
@@ -318,3 +323,7 @@ pred <- predict(rangerCv, df_test1)
 cm <- confusionMatrix(data = factor(pred), reference = factor(df_test1$target1), positive = "long stay")
 cm$overall[1]
 ```
+## Errors and Challeges
+- Error in the code because the factors were not the same when using the test data
+
+- After I knit the presentation to HTML, there was code in the background of the presentation.
