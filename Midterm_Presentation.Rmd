@@ -9,7 +9,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
-```{r, echo=FALSE}
+```{r, message = FALSE, warning = FALSE}
 library(gapminder)
 library(gganimate)
 library(ggplot2)
@@ -34,7 +34,7 @@ df1 <- drop_na(df1, raceethn, er_mode)
 
 ## Plot of Age of Patients Hospitalized
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
 library(tidyverse)
 df1 %>% ggplot()+
   geom_histogram(mapping = aes(x = age))+
@@ -46,7 +46,7 @@ df1 %>% ggplot()+
 
 ## Plot of the Sex of Patients Hospitalized
 
-```{r}
+```{r, warning = FALSE}
 df1$sex <- as.character(df1$sex)
 df1 %>% ggplot()+
   geom_bar(mapping = aes(x = sex))+
@@ -57,7 +57,7 @@ df1 %>% ggplot()+
 ```
 
 ## Plot of the Age and Total Patient Charges
-```{r}
+```{r, message = FALSE, warning = FALSE}
 df1 %>%  ggplot()+
   geom_point(mapping = aes(x= age, y= tot), position="jitter")+
   labs(x='Age', 
@@ -67,7 +67,7 @@ df1 %>%  ggplot()+
 ```
 
 ## Plot of the Ages of Patients with Race and Ethnicity
-```{r}
+```{r, warning = FALSE}
 df1$raceethn <- as.character(df1$raceethn)
 df1 %>% ggplot()+
   geom_density(mapping = aes(x = age , color = raceethn))+
@@ -79,7 +79,7 @@ df1 %>% ggplot()+
 ```
 
 ## Plot of Patients Race and Ethnicity and Sex
-```{r}
+```{r, warning = FALSE}
 df1 %>% ggplot()+
   geom_bar(mapping=aes(x=raceethn, fill=sex), position='dodge')+
   labs(x='Race and Ethnicity', 
@@ -90,7 +90,7 @@ df1 %>% ggplot()+
 ```
 
 ## Plot of Age and Total Patient Charges
-```{r}
+```{r, warning = FALSE}
 df1 %>% filter(raceethn==1|raceethn==7) %>% 
   ggplot(mapping=aes(x=age, y=tot))+ 
   geom_point()+
@@ -103,7 +103,7 @@ df1 %>% filter(raceethn==1|raceethn==7) %>%
 ```
 
 ## Plot of Age and Length of Stay
-```{r}
+```{r, warning = FALSE}
 df1 %>% 
   ggplot()+ 
   geom_point(mapping=aes(x=age, y=los, color=sex), position='jitter')+
@@ -115,7 +115,7 @@ df1 %>%
 ```
 
 ## Plot of the Number per Sex for the Month of Arrival
-```{r}
+```{r, message = FALSE, warning = FALSE}
 df1 %>% ggplot()+ 
   geom_bar(mapping=aes(x=moa, fill=sex), 
            position = 'dodge')+
@@ -127,7 +127,7 @@ df1 %>% ggplot()+
 ```
 
 ## Plot of the Admission Type per Month of Admission
-```{r}
+```{r, warning = FALSE}
 df1$admtype <- as.character(df1$admtype)
 df1 %>% ggplot()+ 
   geom_bar(mapping=aes(x=moa, fill=admtype), 
@@ -140,7 +140,7 @@ df1 %>% ggplot()+
 ```
 
 ## Plot of the Mean Total Patient Charges for Each Admission Type
-```{r}
+```{r, message = FALSE, warning = FALSE}
 df1 %>% group_by(admtype) %>% summarise(mean=mean(tot)) %>% 
   ggplot()+ 
   geom_col(mapping=aes(x=admtype, y=mean))+
@@ -151,7 +151,7 @@ df1 %>% group_by(admtype) %>% summarise(mean=mean(tot)) %>%
 ```
 
 ## Plot of the Mean Total Patient Charges for each Provider per Month of Admission
-```{r}
+```{r, message = FALSE, warning = FALSE}
 d1 <- df1 %>% group_by(moa, provider) %>% summarise(mean = mean(tot))
 d2 <- d1 %>% group_by(moa) %>% mutate(rank=rank(-mean)) %>% ungroup()
 d3 <- d2 %>% filter(rank <= 7)
@@ -173,7 +173,7 @@ Target is the Total Patient Charges
 - Low cost < 22050
 
 - High cost > 22050
-```{r, echo=FALSE}
+```{r, message = FALSE, warning = FALSE}
 median(df1$tot)
 df1$target <- case_when(
   df1$tot <22050 ~ 'low cost',
@@ -199,7 +199,7 @@ barplot(tree_model$variable.importance)
 ```
 
 ## Tree Approach
-```{r}
+```{r, warning = FALSE}
 tuneGrid = expand.grid(maxdepth = 2:10)
 trControl = trainControl(method = "cv",
                          number = 5)
@@ -211,7 +211,7 @@ plot(tree_approach)
 ```
 
 ## Random Forest with Ranger Method
-```{r}
+```{r, warning = FALSE}
 trControl = trainControl(method = "cv",
                          number = 5)
 tuneGrid = expand.grid(mtry = 2:4,
@@ -225,7 +225,7 @@ plot(ranger_cv)
 ```
 
 ## Random Forest
-```{r}
+```{r, warning = FALSE}
 tuneGrid = expand.grid(mtry = 2:5)
 trControl = trainControl(method = "cv",
                          number = 5)
@@ -237,7 +237,7 @@ plot(forest_cv)
 ```
 
 ## Comparison of the Models 
-```{r}
+```{r, warning = FALSE}
 results <- resamples(list(forest = forest_cv,
                           ranger = ranger_cv,
                           tree= tree_approach))
@@ -245,7 +245,7 @@ bwplot(results)
 ```
 
 ## Accuracy of the Final Model on the Test Data
-```{r}
+```{r, warning = FALSE}
 pred <- predict(ranger_cv, df_test)
 cm <- confusionMatrix(data = factor(pred), reference = factor(df_test$target), positive = "high cost")
 cm$overall[1]
@@ -258,15 +258,14 @@ The new target variable is the length of stay
 
 - Long stay >3
 
-```{r}
-median(df1$los)
+```{r, message = FALSE, warning = FALSE}
 df1$target1 <- case_when(
   df1$los <3 ~ 'short stay',
   TRUE ~ 'long stay')
 
 df3 <- select(df1,"age","sex","raceethn","provider","moa","mod","campus", "er_mode", "tot","target1")
 ```
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning = FALSE}
 set.seed(2020)
 splitIndex <- createDataPartition(df3$target1 , p = .10, list = FALSE)
 df_train1 <- df3[ splitIndex,]
@@ -274,7 +273,7 @@ df_test1 <- df3[-splitIndex,]
 ```
 
 ## Variable Importance for New Target
-```{r}
+```{r, warning = FALSE}
 treeModel <- rpart(target1 ~ ., data = df_train1,
                  control = rpart.control(maxdepth = 3))
 library(rattle)
@@ -283,7 +282,7 @@ barplot(treeModel$variable.importance)
 ```
 
 ## Tree Approach
-```{r}
+```{r, warning = FALSE}
 tuneGrid = expand.grid(maxdepth = 2:10)
 trControl = trainControl(method = "cv",
                          number = 5)
@@ -295,7 +294,7 @@ plot(treeApproach)
 ```
 
 ## Random Forest with Ranger Method
-```{r}
+```{r, warning = FALSE}
 trControl = trainControl(method = "cv",
                          number = 5)
 tuneGrid = expand.grid(mtry = 2:4,
@@ -309,7 +308,7 @@ plot(rangerCv)
 ```
 
 ## Random Forest
-```{r}
+```{r, warning = FALSE}
 tuneGrid = expand.grid(mtry = 2:5)
 trControl = trainControl(method = "cv",
                          number = 5)
@@ -321,7 +320,7 @@ plot(forestCv)
 ```
 
 ## Comparison of the Models
-```{r}
+```{r, warning = FALSE}
 results <- resamples(list(forest = forestCv,
                           ranger = rangerCv,
                           tree= treeApproach))
@@ -329,7 +328,7 @@ bwplot(results)
 ```
 
 ## Accuracy of the Final Model on the Test Data
-```{r}
+```{r, warning = FALSE}
 pred <- predict(rangerCv, df_test1)
 cm <- confusionMatrix(data = factor(pred), reference = factor(df_test1$target1), positive = "long stay")
 cm$overall[1]
