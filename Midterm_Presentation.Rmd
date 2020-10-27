@@ -9,9 +9,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
-
-```{r}
-
+```{r, echo=FALSE}
 library(gapminder)
 library(gganimate)
 library(ggplot2)
@@ -45,7 +43,9 @@ df1 %>% ggplot()+
        title = 'Age of Patients Hospitalized', 
        caption = 'There are more newborns than any other age hopitilized in Rhode Island in the given year.')
 ```
+
 ## Plot of the Sex of Patients Hospitalized
+
 ```{r}
 df1$sex <- as.character(df1$sex)
 df1 %>% ggplot()+
@@ -166,6 +166,7 @@ a1 <- d3 %>% ggplot(aes(x=rank, y=mean, group=provider, fill= provider, label=pr
     ease_aes("cubic-in-out")
 animate(a1, nframes = 400, fps = 10)
 ```
+
 ## Predictive Models
 Target is the Total Patient Charges
 
@@ -196,6 +197,7 @@ library(rattle)
 fancyRpartPlot(tree_model)
 barplot(tree_model$variable.importance)
 ```
+
 ## Tree Approach
 ```{r}
 tuneGrid = expand.grid(maxdepth = 2:10)
@@ -207,6 +209,7 @@ tree_approach <- train(target~., data=df_train,
                                 tuneGrid = tuneGrid)
 plot(tree_approach)
 ```
+
 ## Random Forest with Ranger Method
 ```{r}
 trControl = trainControl(method = "cv",
@@ -220,6 +223,7 @@ ranger_cv <- train(target~., data=df_train,
                     tuneGrid = tuneGrid)
 plot(ranger_cv)
 ```
+
 ## Random Forest
 ```{r}
 tuneGrid = expand.grid(mtry = 2:5)
@@ -253,6 +257,7 @@ The new target variable is the length of stay
 - Short stay <3
 
 - Long stay >3
+
 ```{r}
 median(df1$los)
 df1$target1 <- case_when(
@@ -267,6 +272,7 @@ splitIndex <- createDataPartition(df3$target1 , p = .10, list = FALSE)
 df_train1 <- df3[ splitIndex,]
 df_test1 <- df3[-splitIndex,]
 ```
+
 ## Variable Importance for New Target
 ```{r}
 treeModel <- rpart(target1 ~ ., data = df_train1,
@@ -275,6 +281,7 @@ library(rattle)
 fancyRpartPlot(treeModel)
 barplot(treeModel$variable.importance)
 ```
+
 ## Tree Approach
 ```{r}
 tuneGrid = expand.grid(maxdepth = 2:10)
@@ -286,6 +293,7 @@ treeApproach <- train(target1~., data=df_train1,
                                 tuneGrid = tuneGrid)
 plot(treeApproach)
 ```
+
 ## Random Forest with Ranger Method
 ```{r}
 trControl = trainControl(method = "cv",
@@ -299,6 +307,7 @@ rangerCv <- train(target1~., data=df_train1,
                     tuneGrid = tuneGrid)
 plot(rangerCv)
 ```
+
 ## Random Forest
 ```{r}
 tuneGrid = expand.grid(mtry = 2:5)
@@ -310,6 +319,7 @@ forestCv <- train(target1~., data=df_train1,
                                 tuneGrid = tuneGrid)
 plot(forestCv)
 ```
+
 ## Comparison of the Models
 ```{r}
 results <- resamples(list(forest = forestCv,
@@ -317,12 +327,14 @@ results <- resamples(list(forest = forestCv,
                           tree= treeApproach))
 bwplot(results)
 ```
+
 ## Accuracy of the Final Model on the Test Data
 ```{r}
 pred <- predict(rangerCv, df_test1)
 cm <- confusionMatrix(data = factor(pred), reference = factor(df_test1$target1), positive = "long stay")
 cm$overall[1]
 ```
+
 ## Errors and Challeges
 - Error in the code because the factors were not the same when using the test data
 
