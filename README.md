@@ -30,4 +30,4 @@ Midterm
 
 - [Midterm](Midterm.html)
 
-- [Midterm Persentation](Midterm_Presentation.html)
+- [Midterm Presentation](Midterm_Presentation.html)
