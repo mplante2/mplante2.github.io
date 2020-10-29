@@ -1,0 +1,235 @@
+---
+title: "Assignment 14"
+author: "Morgann Plante"
+date: "10/28/2020"
+output: html_document
+---
+
+***How to do it?***: 
+
+- Open the Rmarkdown file of this assignment ([link](fa2020_assignment14.Rmd)) in Rstudio. 
+
+- Right under each **question**, insert  a code chunk (you can use the hotkey `Ctrl + Alt + I` to add a code chunk) and code the solution for the question. 
+
+- `Knit` the rmarkdown file (hotkey: `Ctrl + Alt + K`) to export an html.  
+
+-  Publish the html file to your Githiub Page. 
+
+***Submission***: Submit the link on Github of the assignment to Blackboard.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+```{r}
+library(tidyverse)
+df <- read_csv('titanic.csv')
+
+df$PassengerId =  NULL
+df$Ticket =  NULL
+df$Name = NULL
+df$Cabin = NULL
+
+df$Pclass = factor(df$Pclass)
+df$Sex <- factor(df$Sex)
+df$Embarked <- factor(df$Embarked)
+```
+
+-------
+
+1. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: a data frame with all the missing of numeric variables replaced by the associated means.
+
+Hint: [Similar function](https://bryantstats.github.io/math421/gganimate/14_writing_functions.html#28)
+```{r}
+mean_impute <- function(x)
+{
+  if(is.numeric(x))
+  {
+    mean_of_x <- mean(x, na.rm= TRUE)
+    library(tidyr)
+    x <- replace_na(x, mean_of_x) 
+  }
+return(x)    
+}
+
+numeric_impute <- function(d)
+{
+  for (i in 1:length(d))
+  {
+      d[[i]] <- mean_impute(d[[i]])
+  }
+  return(d)
+}
+```
+```{r}
+colSums(is.na(df))
+
+d1 <- numeric_impute(df)
+colSums(is.na(d1))
+```
+
+-------
+
+2. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: a data frame with all the missing of variables replaced by the associated means (for numeric variables) or modes (for non-numeric variables).
+
+Hint: Combine the function in Problem 1 and the function in [this example](https://bryantstats.github.io/math421/gganimate/14_writing_functions.html#28)
+```{r}
+mode_impute <- function(x)
+{
+  if(!is.numeric(x))
+  {
+    # Find the mode of x
+    mode_of_x <- names(sort(-table(x)))[1]
+    # Replace the missing by the mode
+    library(tidyr)
+    x <- replace_na(x, mode_of_x) 
+  }
+return(x)    
+}
+```
+
+```{r}
+numeric_impute <- function(d)
+{
+  for (i in 1:length(d))
+  {
+      d[[i]] <- mode_impute(d[[i]])
+  }
+  for (i in 1:length(d))
+  {
+      d[[i]] <- mean_impute(d[[i]])
+  }
+  return(d)
+}
+```
+
+```{r}
+colSums(is.na(df))
+
+d1 <- numeric_impute(df)
+colSums(is.na(d1))
+```
+
+-------
+
+3. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: Bar plots of all non-numeric variables
+
+Hint: [Similar function](https://bryantstats.github.io/math421/gganimate/14_writing_functions.html#32)
+```{r}
+bar_plot <- function(d)
+{
+  library(ggplot2)
+  for (i in 1:length(d))
+  {
+    if (!is.numeric(d[[i]]))
+    {
+      print(ggplot(d, aes(x = d[[i]]))+ 
+              geom_bar()+
+              labs(x = names(d)[i]))
+    }
+  }
+}
+```
+
+```{r}
+bar_plot(df)
+```
+
+-------
+
+4. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: all possible the bar plots of a non-numeric variable filled by a non-numeric variable.
+
+Hint: [Similar function](https://bryantstats.github.io/math421/gganimate/14_writing_functions.html#40)
+```{r}
+bar_plot2 <- function(d)
+{
+  library(ggplot2)
+  l <- length(d)
+  for (i in 1:(l-1))
+    for (j in (i+1):l)
+  {
+    if (!is.numeric(d[[i]])& (!is.numeric(d[[j]])))
+    {
+      print(ggplot(d, aes(x = d[[i]], fill = d[[j]]))+ 
+              geom_bar()+labs(x = names(d)[i], fill = names(d)[j]))
+    }
+  }
+}
+```
+```{r}
+bar_plot2(df)
+```
+
+-------
+
+5. Write the following function. Give examples to test your function.
+
+- Input: a data frame
+
+- Output: 
+
+  - all possible the bar plots of a non-numeric variable filled by a non-numeric variable.
+  
+  - all possible the density plots of a numeric variable colored by a non-numeric variable
+  
+  - all possible the scatter plots.
+
+Hint: Combine [this function](https://bryantstats.github.io/math421/gganimate/14_writing_functions.html#36), [this function](https://bryantstats.github.io/math421/gganimate/14_writing_functions.html#39), and the function in Question 4. One way to combine is creating a new function, `quick_plot`, and call these three functions within `quic_kplot`. 
+```{r}
+quick_plot <- function(d)
+{
+  library(ggplot2)
+  l <- length(d)
+  for (i in 1:(l-1))
+    for (j in (i+1):l)
+  {
+    if (is.numeric(d[[i]])&is.numeric(d[[j]]))
+    {
+      print(ggplot(d, aes(x = d[[i]], y = d[[j]]))+ 
+              geom_point()+
+              labs(x = names(d)[i], y = names(d)[j]))
+    }
+  }
+  library(ggplot2)
+  l <- length(d)
+  for (i in 1:(l-1))
+    for (j in (i+1):l)
+  {
+    if (!is.numeric(d[[i]])& (!is.numeric(d[[j]])))
+    {
+      print(ggplot(d, aes(x = d[[i]], fill = d[[j]]))+ 
+              geom_bar()+labs(x = names(d)[i], fill = names(d)[j]))
+    }
+  }
+  library(ggplot2)
+  l <- length(d)
+  for (i in 1:(l-1))
+    for (j in (i+1):l)
+  {
+    if (is.numeric(d[[i]])& (!is.numeric(d[[j]])))
+    {
+      print(ggplot(d, aes(x = d[[i]], color = d[[j]]))+ 
+              geom_density()+labs(x = names(d)[i], color = names(d)[j]))
+    }
+  }
+}
+```
+```{r}
+quick_plot(df)
+```
+
