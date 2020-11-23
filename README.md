@@ -36,4 +36,3 @@ Midterm
 
 [Assignment 14](Assignment14.html)
 
-[Q12](Q12.html)
