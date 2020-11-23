@@ -35,3 +35,5 @@ Midterm
 [Assignment 13](Assignment13.html)
 
 [Assignment 14](Assignment14.html)
+
+[Q12](Q12.html)
